@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Game petualangan naratif psikologis. Temukan kebenaran di balik kabin hutan yang terlupakan melalui eksplorasi grid dan pilihan cerita.">
+    <meta name="author" content="Autonomous Product Studio">
+    <meta name="theme-color" content="#1a1f1a">
+    <meta name="color-scheme" content="dark">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Arsip 04">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta property="og:type" content="game">
+    <meta property="og:title" content="Arsip 04: Gema Hutan">
+    <meta property="og:description" content="Petualangan naratif psikologis. Temukan kebenaran di balik kabin hutan yang terlupakan.">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:site_name" content="Arsip 04">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Arsip 04: Gema Hutan">
+    <meta name="twitter:description" content="Petualangan naratif psikologis. Temukan kebenaran di balik kabin hutan yang terlupakan.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231a1f1a'/%3E%3Cpath d='M30 30 L70 30 L70 70 L30 70 Z' fill='none' stroke='%23c4b9a5' stroke-width='4'/%3E%3Cpath d='M40 40 L60 40 L60 60 L40 60 Z' fill='%238b3a3a'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231a1f1a'/%3E%3Cpath d='M30 30 L70 30 L70 70 L30 70 Z' fill='none' stroke='%23c4b9a5' stroke-width='4'/%3E%3Cpath d='M40 40 L60 40 L60 60 L40 60 Z' fill='%238b3a3a'/%3E%3C/svg%3E">
+    <title>Arsip 04: Gema Hutan</title>
+    <style>
+        :root {
+            --bg: oklch(0.12 0.02 150);
+            --bg-elevated: oklch(0.18 0.02 150);
+            --text: oklch(0.88 0.03 80);
+            --text-dim: oklch(0.65 0.03 80);
+            --accent: oklch(0.55 0.15 25);
+            --accent-hover: oklch(0.65 0.15 25);
+            --success: oklch(0.7 0.15 140);
+            --danger: oklch(0.6 0.2 25);
+            --font-ui: 'Courier New', Courier, monospace;
+            --font-narrative: Georgia, 'Times New Roman', serif;
+            --space-1: 0.5rem;
+            --space-2: 1rem;
+            --space-3: 1.5rem;
+            --space-4: 2rem;
+            --space-6: 3rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+            font-size: 16px;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-ui);
+            height: 100dvh;
+            height: 100vh; /* Fallback */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            touch-action: manipulation;
+            overscroll-behavior: none;
+            position: relative;
+        }
+
+        /* Grain Overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Anti-copy & Anti-select untuk area game */
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* Layout Utama */
+        #app {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: var(--space-2);
+            padding-top: env(safe-area-inset-top, var(--space-2));
+            padding-bottom: env(safe-area-inset-bottom, var(--space-2));
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: var(--font-ui);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); color: var(--text); margin-bottom: var(--space-4); }
+        h2 { font-size: clamp(1.2rem, 4vw, 1.8rem); margin-bottom: var(--space-2); }
+        p { font-family: var(--font-narrative); font-size: clamp(1rem, 3vw, 1.125rem); line-height: 1.6; margin-bottom: var(--space-3); color: var(--text); }
+        .text-dim { color: var(--text-dim); font-family: var(--font-ui); font-size: 0.875rem; }
+
+        /* Buttons & Interactives */
+        button, .btn {
+            background: transparent;
+            border: 1px solid var(--text-dim);
+            color: var(--text);
+            font-family: var(--font-ui);
+            font-size: 1rem;
+            padding: var(--space-2) var(--space-3);
+            min-height: 48px;
+            min-width: 48px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            border-radius: 2px;
+            touch-action: manipulation;
+        }
+
+        button:hover, button:focus-visible {
+            background: var(--bg-elevated);
+            border-color: var(--text);
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: var(--text-dim);
+        }
+
+        button.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg);
+            font-weight: 700;
+        }
+
+        button.primary:hover, button.primary:focus-visible {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* HUD */
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--text-dim);
+            margin-bottom: var(--space-3);
+            font-size: 0.875rem;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .sanity-bar {
+            width: 100px;
+            height: 8px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--text-dim);
+            position: relative;
+        }
+
+        .sanity-fill {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.5s ease, background-color 0.5s ease;
+        }
+
+        .sanity-fill.low { background: var(--danger); }
+
+        /* Game Area */
+        #game-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: var(--space-1);
+            scrollbar-width: thin;
+            scrollbar-color: var(--text-dim) var(--bg);
+        }
+
+        #scene-text {
+            min-height: 120px;
+        }
+
+        .cursor-blink {
+            display: inline-block;
+            width: 8px;
+            height: 1em;
+            background: var(--accent);
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+            margin-left: 2px;
+        }
+
+        #choices {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            margin-top: var(--space-4);
+            padding-bottom: var(--space-4);
+        }
+
+        /* Grid Exploration */
+        #grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-1);
+            margin: var(--space-3) 0;
+            max-width: 300px;
+            aspect-ratio: 1;
+        }
+
+        .grid-cell {
+            background: var(--bg-elevated);
+            border: 1px solid var(--text-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .grid-cell:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: -2px;
+        }
+
+        .grid-cell.player {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .grid-cell.item {
+            border-color: var(--success);
+        }
+
+        .grid-cell.hazard {
+            border-color: var(--danger);
+        }
+
+        .grid-cell.revealed {
+            background: var(--bg);
+        }
+
+        /* D-Pad Mobile */
+        #dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 48px);
+            grid-template-rows: repeat(3, 48px);
+            gap: 4px;
+            margin-top: var(--space-3);
+            justify-content: center;
+        }
+
+        .dpad-btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--text-dim);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            border-radius: 4px;
+        }
+
+        .dpad-btn:active { background: var(--text-dim); color: var(--bg); }
+        .dpad-up { grid-column: 2; grid-row: 1; }
+        .dpad-left { grid-column: 1; grid-row: 2; }
+        .dpad-right { grid-column: 3; grid-row: 2; }
+        .dpad-down { grid-column: 2; grid-row: 3; }
+        .dpad-center { grid-column: 2; grid-row: 2; background: transparent; border: none; pointer-events: none; }
+
+        /* Modal / Pause */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 12, 10, 0.95);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-4);
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-content {
+            background: var(--bg);
+            border: 1px solid var(--text-dim);
+            padding: var(--space-4);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90dvh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 { margin-bottom: var(--space-3); border-bottom: 1px solid var(--text-dim); padding-bottom: var(--space-2); }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--bg-elevated);
+        }
+
+        /* Orientation Warning */
+        #orientation-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 9998;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--space-4);
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            #orientation-warning { display: flex; }
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes blink { 50% { opacity: 0; } }
+        @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+
+        .flicker { animation: flicker 4s infinite; }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+            .cursor-blink { display: none; }
+        }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+    </style>
+</head>
+<body class="no-select">
+    <div id="orientation-warning">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 1rem; color: var(--accent);">
+            <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/>
+        </svg>
+        <h2>Putar Perangkat Anda</h2>
+        <p class="text-dim">Pengalaman ini dirancang optimal untuk mode potret atau layar yang lebih tinggi.</p>
+    </div>
+
+    <div id="app">
+        <!-- Main Menu -->
+        <div id="screen-menu" class="screen active">
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                <h1 class="flicker">ARSIP 04<br><span style="font-size: 0.6em; color: var(--text-dim); font-weight: normal;">GEMA HUTAN</span></h1>
+                <p style="max-width: 400px; margin-bottom: 2rem;">Sebuah dokumen ditemukan di kabin tua. Isinya tidak masuk akal. Namun, Anda merasa harus membacanya sampai habis.</p>
+                <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%; max-width: 300px;">
+                    <button class="primary" id="btn-start" aria-label="Mulai permainan baru">Mulai Eksplorasi</button>
+                    <button id="btn-load" aria-label="Lanjutkan dari simpanan terakhir">Lanjutkan</button>
+                    <button id="btn-settings-menu" aria-label="Buka pengaturan">Pengaturan</button>
+                </div>
+            </div>
+            <footer style="text-align: center; padding: 1rem; font-size: 0.75rem; color: var(--text-dim);">
+                v1.0.0 • Autonomous Product Studio
+            </footer>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="screen-game" class="screen">
+            <div id="hud">
+                <div class="stat">
+                    <span>Bab:</span>
+                    <strong id="hud-chapter">1</strong>
+                </div>
+                <div class="stat">
+                    <span>Kewarasan:</span>
+                    <div class="sanity-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Tingkat kewarasan">
+                        <div class="sanity-fill" id="sanity-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <button id="btn-pause" aria-label="Jeda permainan" style="min-width: auto; padding: 0.5rem;">||</button>
+            </div>
+
+            <div id="game-content">
+                <div id="scene-text" aria-live="polite"></div>
+                
+                <!-- Grid Exploration (Hidden by default) -->
+                <div id="grid-section" class="hidden">
+                    <p class="text-dim" style="margin-top: 1rem;">Gunakan tombol arah atau WASD untuk mencari ruangan.</p>
+                    <div id="grid-container" role="grid" aria-label="Grid eksplorasi ruangan"></div>
+                    <div id="dpad" class="no-select">
+                        <button class="dpad-btn dpad-up" data-dir="up" aria-label="Gerak ke atas">▲</button>
+                        <button class="dpad-btn dpad-left" data-dir="left" aria-label="Gerak ke kiri">◀</button>
+                        <div class="dpad-center"></div>
+                        <button class="dpad-btn dpad-right" data-dir="right" aria-label="Gerak ke kanan">▶</button>
+                        <button class="dpad-btn dpad-down" data-dir="down" aria-label="Gerak ke bawah">▼</button>
+                    </div>
+                </div>
+
+                <div id="choices"></div>
+            </div>
+        </div>
+
+        <!-- Pause/Settings Modal -->
+        <div id="modal-pause" class="modal-overlay">
+            <div class="modal-content">
+                <h2>Jeda</h2>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+                    <button class="primary" id="btn-resume">Lanjutkan</button>
+                    <button id="btn-settings-pause">Pengaturan</button>
+                    <button id="btn-quit" style="color: var(--danger); border-color: var(--danger);">Keluar ke Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-settings" class="modal-overlay">
+            <div class="modal-content">
+                <h2>Pengaturan</h2>
+                <div class="setting-row">
+                    <span>Efek Suara & Ambience</span>
+                    <button id="btn-toggle-audio" aria-pressed="true">Aktif</button>
+                </div>
+                <div class="setting-row">
+                    <span>Kecepatan Teks</span>
+                    <select id="select-text-speed" style="background: var(--bg-elevated); color: var(--text); border: 1px solid var(--text-dim); padding: 0.5rem; font-family: var(--font-ui);">
+                        <option value="30">Cepat</option>
+                        <option value="50" selected>Normal</option>
+                        <option value="80">Lambat</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <span style="color: var(--danger);">Hapus Data Simpanan</span>
+                    <button id="btn-reset-data" style="color: var(--danger); border-color: var(--danger); min-width: auto;">Reset</button>
+                </div>
+                <button id="btn-close-settings" style="margin-top: 1rem; width: 100%;">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ARSIP 04: GEMA HUTAN
+         * Game Logic & State Management
+         */
+
+        // --- CONSTANTS & CONFIG ---
+        const STORAGE_KEY = 'arsip04_save_v1';
+        const GRID_SIZE = 3;
+        
+        // --- STATE ---
+        let state = {
+            scene: 'intro',
+            sanity: 100,
+            inventory: [],
+            flags: {},
+            settings: {
+                audio: true,
+                textSpeed: 50
+            },
+            grid: {
+                active: false,
+                playerX: 1,
+                playerY: 1,
+                revealed: [],
+                map: [
+                    [0, 1, 0], // 0: empty, 1: item, 2: hazard
+                    [0, 0, 2],
+                    [2, 0, 1]
+                ]
+            },
+            isPlaying: false,
+            typeWriterTimeout: null
+        };
+
+        // --- AUDIO MANAGER (Web Audio API) ---
+        const AudioManager = {
+            ctx: null,
+            droneOsc: null,
+            droneGain: null,
+            isInit: false,
+
+            init() {
+                if (this.isInit) return;
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                    this.isInit = true;
+                } catch (e) {
+                    console.warn('Web Audio API tidak didukung');
+                }
+            },
+
+            resume() {
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+
+            playDrone() {
+                if (!state.settings.audio || !this.ctx) return;
+                if (this.droneOsc) return; // Already playing
+
+                try {
+                    this.droneOsc = this.ctx.createOscillator();
+                    this.droneGain = this.ctx.createGain();
+                    
+                    this.droneOsc.type = 'sine';
+                    this.droneOsc.frequency.setValueAtTime(55, this.ctx.currentTime); // Low A
+                    
+                    // Modulasi halus untuk efek "mencekam"
+                    const lfo = this.ctx.createOscillator();
+                    lfo.type = 'sine';
+                    lfo.frequency.setValueAtTime(0.2, this.ctx.currentTime);
+                    const lfoGain = this.ctx.createGain();
+                    lfoGain.gain.setValueAtTime(5, this.ctx.currentTime);
+                    
+                    lfo.connect(lfoGain);
+                    lfoGain.connect(this.droneOsc.frequency);
+                    lfo.start();
+
+                    this.droneGain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                    
+                    this.droneOsc.connect(this.droneGain);
+                    this.droneGain.connect(this.ctx.destination);
+                    this.droneOsc.start();
+                } catch (e) {
+                    console.error('Error playing drone:', e);
+                }
+            },
+
+            stopDrone() {
+                if (this.droneOsc) {
+                    try {
+                        this.droneOsc.stop();
+                        this.droneOsc.disconnect();
+                        this.droneGain.disconnect();
+                        this.droneOsc = null;
+                        this.droneGain = null;
+                    } catch (e) {}
+                }
+            },
+
+            playClick() {
+                if (!state.settings.audio || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.05);
+                } catch (e) {}
+            }
+        };
+
+        // --- SCENE DATA ---
+        const scenes = {
+            intro: {
+                chapter: 1,
+                text: "Kamu terbangun di lantai kayu yang dingin. Bau apek dan tanah basah memenuhi ruangan. Satu-satunya cahaya berasal dari celah papan jendela yang tertutup rapat.\n\nDi depanmu ada meja kayu tua. Di sudut ruangan, terlihat pintu besi berkarat.",
+                choices: [
+                    { text: "Periksa meja", next: 'desk' },
+                    { text: "Coba buka pintu", next: 'door_locked' },
+                    { text: "Intip dari celah jendela", next: 'window' }
+                ]
+            },
+            desk: {
+                chapter: 1,
+                text: "Di atas meja terdapat sebuah catatan kusam. Tinta-nya hampir luntur, namun masih terbaca:\n\n'Jangan lihat ke sudut ruangan terlalu lama. Mereka suka diperhatikan.'\n\nDi samping catatan, ada sebuah kunci kecil berkarat.",
+                onEnter: () => {
+                    if (!state.inventory.includes('kunci_berkarat')) {
+                        state.inventory.push('kunci_berkarat');
+                    }
+                },
+                choices: [
+                    { text: "Kembali ke tengah ruangan", next: 'intro' },
+                    { text: "Coba buka pintu dengan kunci", next: 'door_unlock', req: 'kunci_berkarat' }
+                ]
+            },
+            door_locked: {
+                chapter: 1,
+                text: "Pintu itu terkunci rapat. Gagangnya dingin dan licin. Kamu memerlukan sesuatu untuk membukanya.",
+                choices: [
+                    { text: "Kembali", next: 'intro' }
+                ]
+            },
+            door_unlock: {
+                chapter: 2,
+                text: "Kunci itu berputar dengan suara berdecit yang menyakitkan telinga. Pintu terbuka, menampakkan lorong gelap yang berujung ke hutan. Namun, sebelum melangkah, kamu mendengar suara berisik dari balik dinding.\n\nRuangan ini memiliki lantai papan yang longgar. Mungkin ada sesuatu di bawahnya.",
+                onEnter: () => {
+                    state.grid.active = true;
+                    state.grid.playerX = 1;
+                    state.grid.playerY = 1;
+                    state.grid.revealed = [];
+                },
+                choices: [
+                    { text: "Abaikan, langsung keluar", next: 'ending_bad_rush' },
+                    { text: "Periksa lantai (Mode Eksplorasi)", action: 'start_grid' }
+                ]
+            },
+            window: {
+                chapter: 1,
+                text: "Kamu mengintip. Di luar, kabut tebal menyelimuti pohon-pohon tinggi. Di antara kabut, kamu melihat sesosok bayangan tinggi berdiri diam, menghadap ke arahmu.\n\nJantungmu berdegup kencang.",
+                onEnter: () => {
+                    changeSanity(-15);
+                },
+                choices: [
+                    { text: "Menjauh dari jendela", next: 'intro' }
+                ]
+            },
+            grid_complete: {
+                chapter: 2,
+                text: "Kamu menemukan sebuah jurnal tua di bawah lantai. Isinya menjelaskan cara keluar dari hutan ini tanpa 'mereka' menyadarimu. Dengan pengetahuan ini, kamu membuka pintu dan melangkah ke dalam kabut, kali ini dengan tujuan yang jelas.",
+                onEnter: () => {
+                    state.grid.active = false;
+                    state.flags.journal_found = true;
+                },
+                choices: [
+                    { text: "Keluar dari Hutan", next: 'ending_good' }
+                ]
+            },
+            ending_bad_rush: {
+                chapter: 3,
+                text: "Kamu berlari keluar tanpa berpikir. Kabut langsung menelanmu. Langkah-langkah berat terdengar di belakangmu, semakin dekat, hingga... gelap.",
+                choices: [
+                    { text: "Arsip Ditutup", next: 'intro', action: 'reset_game' }
+                ]
+            },
+            ending_good: {
+                chapter: 3,
+                text: "Kamu mengikuti petunjuk dari jurnal. Setiap kali bayangan muncul, kamu tahu harus menunduk dan diam. Setelah berjalan selama yang terasa seperti berjam-jam, kamu melihat cahaya lampu jalan.\n\nKamu selamat. Untuk saat ini.",
+                choices: [
+                    { text: "Mulai Ulang", next: 'intro', action: 'reset_game' }
+                ]
+            },
+            game_over_sanity: {
+                chapter: 0,
+                text: "Pikiranmu pecah. Bayangan-bayangan di sudut ruangan mulai bergerak, berbisik dengan suara yang tidak manusiawi. Kamu tidak bisa lagi membedakan mana yang nyata.",
+                choices: [
+                    { text: "Bangun Kembali", next: 'intro', action: 'reset_game' }
+                ]
+            }
+        };
+
+        // --- CORE FUNCTIONS ---
+
+        function init() {
+            setupEventListeners();
+            setupAndroidHandlers();
+            loadGame();
+            renderMenu();
+        }
+
+        function setupEventListeners() {
+            // Menu Buttons
+            document.getElementById('btn-start').addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                AudioManager.init();
+                AudioManager.resume();
+                startNewGame();
+            });
+            
+            document.getElementById('btn-load').addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                AudioManager.init();
+                AudioManager.resume();
+                loadGame(true);
+            });
+
+            document.getElementById('btn-settings-menu').addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                AudioManager.playClick();
+                openModal('modal-settings');
+            });
+
+            // Game Buttons
+            document.getElementById('btn-pause').addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                AudioManager.playClick();
+                pauseGame();
+            });
+
+            document.getElementById('btn-resume').addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                AudioManager.playClick();
+                resumeGame();
+            });
+
+            document.getElementById('btn-quit').addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                AudioManager.playClick();
+                quitToMenu();
+            });
+
+            document.getElementById('btn-settings-pause').addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                AudioManager.playClick();
+                openModal('modal-settings');
+            });
+
+            document.getElementById('btn-close-settings').addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                AudioManager.playClick();
+                closeModal('modal-settings');
+            });
+
+            // Settings
+            document.getElementById('btn-toggle-audio').addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                state.settings.audio = !state.settings.audio;
+                updateSettingsUI();
+                if (state.settings.audio && state.isPlaying) {
+                    AudioManager.playDrone();
+                } else {
+                    AudioManager.stopDrone();
+                }
+                saveGame();
+            });
+
+            document.getElementById('select-text-speed').addEventListener('change', (e) => {
+                state.settings.textSpeed = parseInt(e.target.value, 10);
+                saveGame();
+            });
+
+            document.getElementById('btn-reset-data').addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if (confirm('Hapus semua data simpanan? Tindakan ini tidak dapat dibatalkan.')) {
+                    try {
+                        localStorage.removeItem(STORAGE_KEY);
+                        state = getDefaultState();
+                        updateSettingsUI();
+                        alert('Data berhasil dihapus.');
+                    } catch (e) {
+                        console.error('Gagal menghapus data', e);
+                    }
+                }
+            });
+
+            // D-Pad
+            document.querySelectorAll('.dpad-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    AudioManager.playClick();
+                    movePlayer(btn.dataset.dir);
+                });
+            });
+
+            // Keyboard
+            window.addEventListener('keydown', (e) => {
+                if (!state.isPlaying) return;
+                
+                if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') {
+                    e.preventDefault();
+                    if (document.getElementById('modal-pause').classList.contains('active')) {
+                        resumeGame();
+                    } else {
+                        pauseGame();
+                    }
+                }
+                
+                if (state.grid.active) {
+                    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') movePlayer('up');
+                    if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') movePlayer('down');
+                    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') movePlayer('left');
+                    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') movePlayer('right');
+                }
+            });
+
+            // Prevent context menu & drag on game area
+            const gameArea = document.getElementById('app');
+            gameArea.addEventListener('contextmenu', e => e.preventDefault());
+            gameArea.addEventListener('dragstart', e => e.preventDefault());
+            gameArea.addEventListener('selectstart', e => {
+                if (state.isPlaying) e.preventDefault();
+            });
+        }
+
+        function setupAndroidHandlers() {
+            // Back button handling
+            window.history.pushState({ page: 'game' }, '');
+            window.addEventListener('popstate', (e) => {
+                if (state.isPlaying && !document.getElementById('modal-pause').classList.contains('active')) {
+                    e.preventDefault();
+                    pauseGame();
+                    window.history.pushState({ page: 'game' }, '');
+                }
+            });
+
+            // Visibility change (tab switch / phone call)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    if (state.isPlaying) {
+                        pauseGame();
+                    }
+                    AudioManager.stopDrone();
+                } else {
+                    if (state.isPlaying && state.settings.audio) {
+                        AudioManager.resume();
+                        AudioManager.playDrone();
+                    }
+                }
+            });
+
+            // Resize debounce
+            let resizeTimeout;
+            const handleResize = () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    // Force reflow if needed, CSS handles most via 100dvh
+                    if (state.grid.active) renderGrid();
+                }, 150);
+            };
+            window.addEventListener('resize', handleResize);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', handleResize);
+            }
+
+            // Wake Lock
+            requestWakeLock();
+        }
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    await navigator.wakeLock.request('screen');
+                }
+            } catch (e) {
+                // Ignore, fallback is acceptable
+            }
+        }
+
+        function getDefaultState() {
+            return {
+                scene: 'intro',
+                sanity: 100,
+                inventory: [],
+                flags: {},
+                settings: { audio: true, textSpeed: 50 },
+                grid: {
+                    active: false,
+                    playerX: 1,
+                    playerY: 1,
+                    revealed: [],
+                    map: [[0, 1, 0], [0, 0, 2], [2, 0, 1]]
+                },
+                isPlaying: false,
+                typeWriterTimeout: null
+            };
+        }
+
+        function startNewGame() {
+            state = getDefaultState();
+            state.isPlaying = true;
+            saveGame();
+            switchScreen('screen-game');
+            loadScene('intro');
+            AudioManager.playDrone();
+        }
+
+        function loadScene(sceneId) {
+            state.scene = sceneId;
+            const scene = scenes[sceneId];
+            if (!scene) return;
+
+            if (scene.onEnter) {
+                scene.onEnter();
+            }
+
+            updateHUD();
+            
+            // Clear previous typewriter
+            if (state.typeWriterTimeout) {
+                clearTimeout(state.typeWriterTimeout);
+            }
+
+            const textEl = document.getElementById('scene-text');
+            textEl.innerHTML = '';
+            
+            // Grid handling
+            const gridSection = document.getElementById('grid-section');
+            if (sceneId === 'door_unlock' || state.grid.active) {
+                gridSection.classList.remove('hidden');
+                renderGrid();
+            } else {
+                gridSection.classList.add('hidden');
+            }
+
+            // Typewriter effect
+            let i = 0;
+            const text = scene.text;
+            const speed = state.settings.textSpeed;
+
+            function type() {
+                if (i < text.length) {
+                    textEl.innerHTML += text.charAt(i) === '\n' ? '<br>' : text.charAt(i);
+                    i++;
+                    state.typeWriterTimeout = setTimeout(type, speed);
+                } else {
+                    textEl.innerHTML += '<span class="cursor-blink" aria-hidden="true"></span>';
+                    renderChoices(scene.choices);
+                }
+            }
+            type();
+            
+            saveGame();
+        }
+
+        function renderChoices(choices) {
+            const container = document.getElementById('choices');
+            container.innerHTML = '';
+
+            choices.forEach(choice => {
+                if (choice.req && !state.inventory.includes(choice.req)) {
+                    return; // Hide if requirement not met
+                }
+
+                const btn = document.createElement('button');
+                btn.textContent = choice.text;
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    AudioManager.playClick();
+                    
+                    if (choice.action === 'reset_game') {
+                        startNewGame();
+                        return;
+                    }
+                    if (choice.action === 'start_grid') {
+                        state.grid.active = true;
+                        renderGrid();
+                        return;
+                    }
+
+                    if (choice.next) {
+                        loadScene(choice.next);
+                    }
+                });
+                container.appendChild(btn);
+            });
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+            
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell no-select';
+                    cell.setAttribute('role', 'gridcell');
+                    cell.setAttribute('tabindex', '0');
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+
+                    const isPlayer = x === state.grid.playerX && y === state.grid.playerY;
+                    const isRevealed = state.grid.revealed.includes(`${x},${y}`);
+                    const cellType = state.grid.map[y][x];
+
+                    if (isPlayer) {
+                        cell.classList.add('player');
+                        cell.textContent = '●';
+                        cell.setAttribute('aria-label', 'Posisi pemain');
+                    } else if (isRevealed) {
+                        cell.classList.add('revealed');
+                        if (cellType === 1) {
+                            cell.textContent = '📜';
+                            cell.classList.add('item');
+                            cell.setAttribute('aria-label', 'Item ditemukan');
+                        } else if (cellType === 2) {
+                            cell.textContent = '⚠️';
+                            cell.classList.add('hazard');
+                            cell.setAttribute('aria-label', 'Bahaya');
+                        } else {
+                            cell.textContent = '·';
+                            cell.setAttribute('aria-label', 'Kosong');
+                        }
+                    } else {
+                        cell.textContent = '?';
+                        cell.setAttribute('aria-label', 'Belum dijelajahi');
+                    }
+
+                    cell.addEventListener('pointerdown', (e) => {
+                        e.preventDefault();
+                        // Allow clicking adjacent cells to move
+                        const dx = Math.abs(x - state.grid.playerX);
+                        const dy = Math.abs(y - state.grid.playerY);
+                        if (dx + dy === 1) {
+                            movePlayerTo(x, y);
+                        }
+                    });
+
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        function movePlayer(dir) {
+            if (!state.grid.active) return;
+            
+            let newX = state.grid.playerX;
+            let newY = state.grid.playerY;
+
+            if (dir === 'up') newY = Math.max(0, newY - 1);
+            if (dir === 'down') newY = Math.min(GRID_SIZE - 1, newY + 1);
+            if (dir === 'left') newX = Math.max(0, newX - 1);
+            if (dir === 'right') newX = Math.min(GRID_SIZE - 1, newX + 1);
+
+            movePlayerTo(newX, newY);
+        }
+
+        function movePlayerTo(x, y) {
+            // [SPAWN VALIDATION] Player movement validated against grid bounds.
+            // Collision check:
+            const cellType = state.grid.map[y][x];
+            
+            if (cellType === 2) {
+                // Hazard
+                changeSanity(-20);
+                alert('Kamu menginjak papan yang rusak. Suara keras terdengar dari bawah.');
+                // Push back
+                return; 
+            }
+
+            state.grid.playerX = x;
+            state.grid.playerY = y;
+            
+            const key = `${x},${y}`;
+            if (!state.grid.revealed.includes(key)) {
+                state.grid.revealed.push(key);
+                
+                if (cellType === 1) {
+                    setTimeout(() => {
+                        alert('Kamu menemukan Jurnal Tua!');
+                        checkGridComplete();
+                    }, 100);
+                }
+            }
+            
+            renderGrid();
+            checkGridComplete();
+        }
+
+        function checkGridComplete() {
+            // Check if all items (1) are revealed
+            let itemsFound = 0;
+            let totalItems = 0;
+            
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    if (state.grid.map[y][x] === 1) {
+                        totalItems++;
+                        if (state.grid.revealed.includes(`${x},${y}`)) {
+                            itemsFound++;
+                        }
+                    }
+                }
+            }
+            
+            if (itemsFound === totalItems && totalItems > 0) {
+                setTimeout(() => {
+                    loadScene('grid_complete');
+                }, 500);
+            }
+        }
+
+        function changeSanity(amount) {
+            state.sanity = Math.max(0, Math.min(100, state.sanity + amount));
+            updateHUD();
+            
+            if (state.sanity <= 0) {
+                setTimeout(() => loadScene('game_over_sanity'), 1000);
+            }
+            saveGame();
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-chapter').textContent = scenes[state.scene]?.chapter || 1;
+            const fill = document.getElementById('sanity-fill');
+            fill.style.width = `${state.sanity}%`;
+            fill.setAttribute('aria-valuenow', state.sanity);
+            
+            if (state.sanity < 40) {
+                fill.classList.add('low');
+            } else {
+                fill.classList.remove('low');
+            }
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function pauseGame() {
+            state.isPlaying = false;
+            if (state.typeWriterTimeout) clearTimeout(state.typeWriterTimeout);
+            AudioManager.stopDrone();
+            openModal('modal-pause');
+        }
+
+        function resumeGame() {
+            closeModal('modal-pause');
+            state.isPlaying = true;
+            if (state.settings.audio) {
+                AudioManager.resume();
+                AudioManager.playDrone();
+            }
+            // Resume typewriter if needed, or just re-render
+            loadScene(state.scene);
+        }
+
+        function quitToMenu() {
+            state.isPlaying = false;
+            AudioManager.stopDrone();
+            closeModal('modal-pause');
+            switchScreen('screen-menu');
+            renderMenu();
+        }
+
+        function renderMenu() {
+            const loadBtn = document.getElementById('btn-load');
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    loadBtn.disabled = false;
+                    loadBtn.textContent = 'Lanjutkan';
+                } else {
+                    loadBtn.disabled = true;
+                    loadBtn.textContent = 'Tidak Ada Simpanan';
+                }
+            } catch (e) {
+                loadBtn.disabled = true;
+            }
+        }
+
+        function updateSettingsUI() {
+            const btn = document.getElementById('btn-toggle-audio');
+            btn.textContent = state.settings.audio ? 'Aktif' : 'Mati';
+            btn.setAttribute('aria-pressed', state.settings.audio);
+            document.getElementById('select-text-speed').value = state.settings.textSpeed;
+        }
+
+        // --- PERSISTENCE ---
+        function saveGame() {
+            try {
+                const dataToSave = {
+                    scene: state.scene,
+                    sanity: state.sanity,
+                    inventory: state.inventory,
+                    flags: state.flags,
+                    settings: state.settings,
+                    grid: state.grid,
+                    version: 1
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+            } catch (e) {
+                console.warn('Gagal menyimpan: Kuota penyimpanan penuh atau tidak didukung.', e);
+            }
+        }
+
+        function loadGame(showError = false) {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.version === 1) {
+                        state = { ...getDefaultState(), ...parsed };
+                        updateSettingsUI();
+                        if (showError) {
+                            switchScreen('screen-game');
+                            state.isPlaying = true;
+                            loadScene(state.scene);
+                            if (state.settings.audio) AudioManager.playDrone();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Data simpanan korup. Mereset.', e);
+                localStorage.removeItem(STORAGE_KEY);
+                if (showError) alert('Data simpanan rusak. Memulai baru.');
+            }
+        }
+
+        // Prevent accidental close
+        window.addEventListener('beforeunload', (e) => {
+            if (state.isPlaying) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Init
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
